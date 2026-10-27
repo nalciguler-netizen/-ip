@@ -60,13 +60,6 @@ jobs:
           $CXX -std=c++17 -O2 -shared -static -static-libgcc -static-libstdc++ -pthread chip_api.cpp build_win/*.o $VR/include/verilated.cpp $EXTRA $INCALL $INC -Wl,--out-implib,libgeomchip.dll.a -o geomchip.dll
           $CXX -std=c++17 -O2 -ffp-contract=off chip_selftest.cpp libgeomchip.dll.a -static-libgcc -static-libstdc++ -o selftest.exe
           ls -la geomchip.dll selftest.exe
-      - name: Windows DLL testi (Wine)
-        continue-on-error: true
-        working-directory: lib
-        run: |
-          sudo apt-get install -y wine64
-          export WINEDEBUG=-all
-          (wine64 ./selftest.exe || wine ./selftest.exe)
       - name: Kutuphaneyi indirilebilir yap
         uses: actions/upload-artifact@v4
         with:
@@ -75,3 +68,11 @@ jobs:
             lib/geomchip.dll
             lib/libgeomchip.so
             lib/geomchip.h
+      - name: Windows DLL testi (Wine, en fazla 3 dk)
+        continue-on-error: true
+        timeout-minutes: 5
+        working-directory: lib
+        run: |
+          sudo apt-get install -y wine64
+          export WINEDEBUG=-all
+          timeout 180 wine64 ./selftest.exe || timeout 180 wine ./selftest.exe
