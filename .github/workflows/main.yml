@@ -1,0 +1,13 @@
+name: Simulasyon
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  sim:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Icarus Verilog kur
+        run: sudo apt-get update && sudo apt-get install -y iverilog
+      - name: Python referans modeli
+        run: python3 model/fp64_model.py
+      - name: Verilog testleri
+        run: bash sim/run_all.sh
