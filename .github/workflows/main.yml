@@ -19,4 +19,9 @@ jobs:
           python3 model/fp64_model.py
           python3 model/aabb_model.py
           python3 model/nurbs_model.py
-      - name: Evre 1 tes
+      - name: Evre 1 testleri
+        run: bash sim/run_all.sh
+      - name: Evre 2 testleri
+        run: bash sim/run_aabb.sh
+      - name: Evre 3 testleri
+        run: bash sim/run_nurbs.sh
