@@ -41,10 +41,37 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y verilator g++ make
       - name: C++ kutuphanesini derle ve test et
         run: bash lib/build_lib.sh
+      - name: Windows DLL derle (MinGW)
+        working-directory: lib
+        run: |
+          sudo apt-get install -y g++-mingw-w64-x86-64-posix
+          VR=$(verilator --getenv VERILATOR_ROOT)
+          CXX=x86_64-w64-mingw32-g++-posix
+          TOPS="fp64_add fp64_mul fp64_div vec3_dot vec3_cross mat4_mul aabb_overlap aabb_multi nurbs3_eval"
+          INC="-I$VR/include -I$VR/include/vltstd"
+          INCALL=""; for t in $TOPS; do INCALL="$INCALL -Ibuild/$t"; done
+          mkdir -p build_win
+          for t in $TOPS; do
+            for f in build/$t/*.cpp; do
+              $CXX -std=c++17 -O1 -c $f -Ibuild/$t $INC -o build_win/${t}_$(basename $f .cpp).o
+            done
+          done
+          EXTRA=""; [ -f $VR/include/verilated_threads.cpp ] && EXTRA="$VR/include/verilated_threads.cpp"
+          $CXX -std=c++17 -O2 -shared -static -static-libgcc -static-libstdc++ -pthread chip_api.cpp build_win/*.o $VR/include/verilated.cpp $EXTRA $INCALL $INC -Wl,--out-implib,libgeomchip.dll.a -o geomchip.dll
+          $CXX -std=c++17 -O2 -ffp-contract=off chip_selftest.cpp libgeomchip.dll.a -static-libgcc -static-libstdc++ -o selftest.exe
+          ls -la geomchip.dll selftest.exe
+      - name: Windows DLL testi (Wine)
+        continue-on-error: true
+        working-directory: lib
+        run: |
+          sudo apt-get install -y wine64
+          export WINEDEBUG=-all
+          (wine64 ./selftest.exe || wine ./selftest.exe)
       - name: Kutuphaneyi indirilebilir yap
         uses: actions/upload-artifact@v4
         with:
           name: geomchip
           path: |
+            lib/geomchip.dll
             lib/libgeomchip.so
             lib/geomchip.h
