@@ -5,6 +5,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Klasorleri duzenle
+        run: |
+          mkdir -p model rtl tb sim
+          mv fp64_model.py model/
+          mv fp64_add.v fp64_mul.v vec_mat.v rtl/
+          mv tb_*.v tb/
+          mv gen_vectors.py run_all.sh sim/
       - name: Icarus Verilog kur
         run: sudo apt-get update && sudo apt-get install -y iverilog
       - name: Python referans modeli
