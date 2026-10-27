@@ -1,7 +1,10 @@
 name: Simulasyon
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+  workflow_dispatch:
 jobs:
   sim:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,3 +28,23 @@ jobs:
         run: bash sim/run_aabb.sh
       - name: Evre 3 testleri
         run: bash sim/run_nurbs.sh
+  lib:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Klasorleri duzenle
+        run: |
+          mkdir -p rtl lib
+          mv fp64_add.v fp64_mul.v vec_mat.v aabb.v nurbs.v rtl/
+          mv build_lib.sh chip_api.cpp chip_selftest.cpp geomchip.h lib/
+      - name: Verilator kur
+        run: sudo apt-get update && sudo apt-get install -y verilator g++ make
+      - name: C++ kutuphanesini derle ve test et
+        run: bash lib/build_lib.sh
+      - name: Kutuphaneyi indirilebilir yap
+        uses: actions/upload-artifact@v4
+        with:
+          name: geomchip
+          path: |
+            lib/libgeomchip.so
+            lib/geomchip.h
