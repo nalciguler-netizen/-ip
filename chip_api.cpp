@@ -31,7 +31,7 @@ template <class M> inline M& model() {
 }  // namespace
 
 extern "C" {
-double sc_time_stamp() { return 0; }
+extern "C++" double sc_time_stamp() { return 0; }
 
 uint64_t chip_fp64_add_bits(uint64_t a, uint64_t b) { auto& m = model<Vfp64_add>(); m.a = a; m.b = b; m.eval(); return m.y; }
 uint64_t chip_fp64_mul_bits(uint64_t a, uint64_t b) { auto& m = model<Vfp64_mul>(); m.a = a; m.b = b; m.eval(); return m.y; }
